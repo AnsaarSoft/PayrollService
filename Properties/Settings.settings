@@ -1,0 +1,21 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PayrollService.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="SapConString" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Data Source=MFMLAP;Initial Catalog=SBOAffinity;User Id = sa; Password = super;</Value>
+    </Setting>
+    <Setting Name="PayrollConString" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Data Source=MFMLAP;Initial Catalog=HCMOneAffinity;User Id = sa; Password = super;</Value>
+    </Setting>
+    <Setting Name="EmployeeTimer" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="LicenseKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">rNUZOXBMfW067CBbf1GasiTYYNdQNqt4XxzBHJ4WUnd6xRfPJ8IcutiS33bsMBd7bLuvoCHdfSjD90Y3oceRVS/V6Z2bE94guiAKmSdJXG7BrZ+JRw5BZTB99/ZG7oJL1yCy46qJXjUp9Fv6iR9stEl0K+xQkiBroMwwaH9zDS8=</Value>
+    </Setting>
+    <Setting Name="EmployeeFSTimer" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">86400000</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
