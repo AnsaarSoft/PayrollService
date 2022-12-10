@@ -109,25 +109,37 @@ namespace PayrollService
                 using (dbHRMS context = new dbHRMS(PayrollConString))
                 {
                     string strGetAllEmployee = $@"
-                        SELECT ISNULL(a.empID, '') EmpId,
-                               ISNULL(a.firstName, '') firstName,
-                               ISNULL(a.lastName, '') lastName,
-                               ISNULL(a.sex, '') sex,
-                               ISNULL(a.email, '') email,
-                               ISNULL(a.jobTitle, '') Designation,
-                               ISNULL(a.U_EvalStartDate, '2012-12-12') DOJ,
-                               ISNULL(a.birthDate, '2012-12-12') birthDate,
-                               a.Active,
-                               ISNULL(a.mobile, '') mobile,
-                               ISNULL(a.homeTel, '') homeTel,
-                               ISNULL(a.govID, '') CNIC,
-                               a.salary,
-                               ISNULL(bankAcount, '') bankAcount,
-                               b.Name AS DeptName,
-                               a.status AS EmployeeStatus
-                        FROM dbo.OHEM a
-                            INNER JOIN dbo.OUDP b
-                                ON a.dept = b.Code
+                    SELECT ISNULL(a.empID, '') EmpId,
+                       ISNULL(a.firstName, '') firstName,
+                       ISNULL(a.lastName, '') lastName,
+                       ISNULL(a.sex, '') sex,
+                       ISNULL(a.email, '') email,
+                       ISNULL(a.jobTitle, '') Designation,
+                       ISNULL(a.U_EvalStartDate, '2012-12-12') DOJ,
+                       ISNULL(a.birthDate, '2012-12-12') birthDate,
+                       a.Active,
+                       ISNULL(a.mobile, '') mobile,
+                       ISNULL(a.homeTel, '') homeTel,
+                       ISNULL(a.govID, '') CNIC,
+                       a.salary,
+                       ISNULL(bankAcount, '') bankAcount,
+                       b.Name AS DeptName,
+                       ISNULL(a.status, 0) AS EmployeeStatus,
+	                   CAST( ISNULL(a.workStreet,'') AS NVARCHAR(100)) AS WorkStreet,
+	                   CAST(ISNULL(a.StreetNoW, '') AS NVARCHAR(100)) AS WorkStreetNo,
+	                   CAST(ISNULL(a.workBlock, '') AS NVARCHAR(50)) AS WorkBlock,
+	                   CAST( ISNULL(a.WorkBuild,'') AS NVARCHAR(100)) AS WorkBuild,
+	                   ISNULL(a.workZip,'') AS WorkZip,
+	                   ISNULL(a.workCity,'') AS WorkCity,
+	                   CAST(ISNULL(a.homeStreet,'') AS NVARCHAR(100)) AS HomeStreet,
+	                   CAST(ISNULL(a.StreetNoH,'') AS NVARCHAR(100)) AS HomeStreetNo,
+	                   CAST(ISNULL(a.homeBlock,'') AS NVARCHAR(50)) AS HomeBlock,
+	                   CAST(ISNULL(a.HomeBuild,'') AS NVARCHAR(100)) AS HomeBuild,
+	                   ISNULL(a.homeZip,'') AS HomeZip,
+	                   ISNULL(a.homeCity,'')  AS HomeCity
+                FROM dbo.OHEM a
+                    INNER JOIN dbo.OUDP b
+                        ON a.dept = b.Code                       
                     ";
                     DataTable EmployeeCollection = ExecuteDatatable(strGetAllEmployee, SAPConString);
                     if (EmployeeCollection.Rows.Count > 0)
@@ -215,6 +227,22 @@ namespace PayrollService
                                 employee.LocationName = "Lahore";
                                 employee.FlgSandwich = true;
                                 employee.FlgEmail = true;
+                                employee.BranchID = 1;
+                                employee.BranchName = "Default";
+                                employee.WAStreet = Convert.ToString(row["WorkStreet"]);
+                                employee.WAStreetNo = Convert.ToString(row["WorkStreetNo"]);
+                                employee.WABlock = Convert.ToString(row["WorkBlock"]);
+                                employee.WAOther = Convert.ToString(row["WorkBuild"]);
+                                employee.WAZipCode = Convert.ToString(row["WorkZip"]);
+                                employee.WACity = Convert.ToString(row["WorkCity"]);
+                                employee.HAStreet = Convert.ToString(row["HomeStreet"]);
+                                employee.HAStreetNo = Convert.ToString(row["HomeStreetNo"]);
+                                employee.HABlock = Convert.ToString(row["HomeBlock"]);
+                                //employee.HAOther = Convert.ToString(row["HomeBuild"]);
+                                //employee.HAZipCode = Convert.ToString(row["HomeZip"]);
+                                //employee.HACity = Convert.ToString(row["HomeCity"]);
+                                employee.UpdatedBy = "Auto";
+                                employee.UpdateDate = DateTime.Now;
                             }
                             else
                             {
@@ -284,8 +312,23 @@ namespace PayrollService
                                 employee.PayrollName = "Standard AV";
                                 employee.Location = 2;
                                 employee.LocationName = "Lahore";
-                                employee.SBOEmpCode = empcode;
                                 employee.FlgUser = true;
+                                employee.FlgSandwich = true;
+                                employee.FlgEmail = true;
+                                employee.BranchID = 1;
+                                employee.BranchName = "Default";
+                                employee.WAStreet = Convert.ToString(row["WorkStreet"]);
+                                //employee.WAStreetNo = Convert.ToString(row["WorkStreetNo"]);
+                                //employee.WABlock = Convert.ToString(row["WorkBlock"]);
+                                //employee.WAOther = Convert.ToString(row["WorkBuild"]);
+                                //employee.WAZipCode = Convert.ToString(row["WorkZip"]);
+                                //employee.WACity = Convert.ToString(row["WorkCity"]);
+                                //employee.HAStreet = Convert.ToString(row["HomeStreet"]);
+                                //employee.HAStreetNo = Convert.ToString(row["HomeStreetNo"]);
+                                //employee.HABlock = Convert.ToString(row["HomeBlock"]);
+                                //employee.HAOther = Convert.ToString(row["HomeBuild"]);
+                                //employee.HAZipCode = Convert.ToString(row["HomeZip"]);
+                                //employee.HACity = Convert.ToString(row["HomeCity"]);
                                 employee.CreatedBy = employee.UpdatedBy = "Auto";
                                 employee.CreateDate = employee.UpdateDate = DateTime.Now;
                                 MstUsers oUser = new MstUsers();
@@ -359,6 +402,7 @@ namespace PayrollService
             {
                 bool resultValue = false;
                 string result = mFm.mfmVerifyLicense(key);
+                //result = "Verification Succeded";
                 switch (result)
                 {
                     case "Verification Succeded":
