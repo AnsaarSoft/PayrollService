@@ -50,7 +50,7 @@ namespace PayrollService.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("120000")]
         public int EmployeeTimer {
             get {
                 return ((int)(this["EmployeeTimer"]));

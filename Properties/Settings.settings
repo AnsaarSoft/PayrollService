@@ -9,7 +9,7 @@
       <Value Profile="(Default)">Data Source=MFMLAP;Initial Catalog=HCMOneAffinity;User Id = sa; Password = super;</Value>
     </Setting>
     <Setting Name="EmployeeTimer" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">120000</Value>
     </Setting>
     <Setting Name="LicenseKey" Type="System.String" Scope="User">
       <Value Profile="(Default)">rNUZOXBMfW067CBbf1GasiTYYNdQNqt4XxzBHJ4WUnd6xRfPJ8IcutiS33bsMBd7bLuvoCHdfSjD90Y3oceRVS/V6Z2bE94guiAKmSdJXG7BrZ+JRw5BZTB99/ZG7oJL1yCy46qJXjUp9Fv6iR9stEl0K+xQkiBroMwwaH9zDS8=</Value>
