@@ -32,8 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.tmrEmployeeSync = new System.Windows.Forms.Timer(this.components);
             this.wb = new Telerik.WinControls.UI.RadWaitingBar();
-            this.waitingBarIndicatorElement2 = new Telerik.WinControls.UI.WaitingBarIndicatorElement();
-            this.waitingBarIndicatorElement1 = new Telerik.WinControls.UI.WaitingBarIndicatorElement();
+            this.rotatingRingsWaitingBarIndicatorElement1 = new Telerik.WinControls.UI.RotatingRingsWaitingBarIndicatorElement();
             this.radThemeManager1 = new Telerik.WinControls.RadThemeManager();
             this.radLabel1 = new Telerik.WinControls.UI.RadLabel();
             this.lblAction = new Telerik.WinControls.UI.RadLabel();
@@ -42,11 +41,15 @@
             this.cmsExit = new System.Windows.Forms.ToolStripMenuItem();
             this.lblVersion = new Telerik.WinControls.UI.RadLabel();
             this.tmrFSEmployee = new System.Windows.Forms.Timer(this.components);
+            this.tmrProbation = new System.Windows.Forms.Timer(this.components);
+            this.tmrEOBI = new System.Windows.Forms.Timer(this.components);
+            this.btnTest = new Telerik.WinControls.UI.RadButton();
             ((System.ComponentModel.ISupportInitialize)(this.wb)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.radLabel1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lblAction)).BeginInit();
             this.Exit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.lblVersion)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnTest)).BeginInit();
             this.SuspendLayout();
             // 
             // tmrEmployeeSync
@@ -55,48 +58,38 @@
             // 
             // wb
             // 
-            this.wb.Location = new System.Drawing.Point(179, 464);
+            this.wb.Location = new System.Drawing.Point(9, 352);
             this.wb.Name = "wb";
-            this.wb.Size = new System.Drawing.Size(130, 24);
+            this.wb.Size = new System.Drawing.Size(130, 49);
             this.wb.TabIndex = 0;
             this.wb.Text = "Hi";
             this.wb.ThemeName = "Fluent";
             this.wb.Visible = false;
-            this.wb.WaitingIndicators.Add(this.waitingBarIndicatorElement2);
-            this.wb.WaitingIndicators.Add(this.waitingBarIndicatorElement1);
+            this.wb.WaitingIndicators.Add(this.rotatingRingsWaitingBarIndicatorElement1);
             this.wb.WaitingIndicatorSize = new System.Drawing.Size(100, 14);
+            this.wb.WaitingStyle = Telerik.WinControls.Enumerations.WaitingBarStyles.RotatingRings;
             // 
-            // waitingBarIndicatorElement2
+            // rotatingRingsWaitingBarIndicatorElement1
             // 
-            this.waitingBarIndicatorElement2.BackColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(234)))), ((int)(((byte)(102)))), ((int)(((byte)(229)))));
-            this.waitingBarIndicatorElement2.BackColor3 = System.Drawing.Color.FromArgb(((int)(((byte)(233)))), ((int)(((byte)(106)))), ((int)(((byte)(228)))));
-            this.waitingBarIndicatorElement2.Name = "waitingBarIndicatorElement2";
-            this.waitingBarIndicatorElement2.StretchHorizontally = false;
-            // 
-            // waitingBarIndicatorElement1
-            // 
-            this.waitingBarIndicatorElement1.BackColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(234)))), ((int)(((byte)(102)))), ((int)(((byte)(229)))));
-            this.waitingBarIndicatorElement1.BackColor3 = System.Drawing.Color.FromArgb(((int)(((byte)(233)))), ((int)(((byte)(106)))), ((int)(((byte)(228)))));
-            this.waitingBarIndicatorElement1.Name = "waitingBarIndicatorElement1";
-            this.waitingBarIndicatorElement1.StretchHorizontally = false;
+            this.rotatingRingsWaitingBarIndicatorElement1.Name = "rotatingRingsWaitingBarIndicatorElement1";
             // 
             // radLabel1
             // 
-            this.radLabel1.Location = new System.Drawing.Point(12, 470);
+            this.radLabel1.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.radLabel1.Location = new System.Drawing.Point(9, 304);
             this.radLabel1.Name = "radLabel1";
-            this.radLabel1.Size = new System.Drawing.Size(38, 18);
+            this.radLabel1.Size = new System.Drawing.Size(50, 23);
             this.radLabel1.TabIndex = 1;
             this.radLabel1.Text = "Action";
-            this.radLabel1.Visible = false;
             // 
             // lblAction
             // 
-            this.lblAction.Location = new System.Drawing.Point(56, 470);
+            this.lblAction.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.lblAction.Location = new System.Drawing.Point(9, 327);
             this.lblAction.Name = "lblAction";
-            this.lblAction.Size = new System.Drawing.Size(52, 18);
+            this.lblAction.Size = new System.Drawing.Size(69, 23);
             this.lblAction.TabIndex = 2;
             this.lblAction.Text = "Waiting...";
-            this.lblAction.Visible = false;
             // 
             // ni
             // 
@@ -121,7 +114,7 @@
             // 
             // lblVersion
             // 
-            this.lblVersion.Location = new System.Drawing.Point(387, 12);
+            this.lblVersion.Location = new System.Drawing.Point(9, 9);
             this.lblVersion.Name = "lblVersion";
             this.lblVersion.Size = new System.Drawing.Size(38, 18);
             this.lblVersion.TabIndex = 3;
@@ -131,16 +124,37 @@
             // 
             this.tmrFSEmployee.Tick += new System.EventHandler(this.tmrFSEmployee_Tick);
             // 
+            // tmrProbation
+            // 
+            this.tmrProbation.Tick += new System.EventHandler(this.tmrProbation_Tick);
+            // 
+            // tmrEOBI
+            // 
+            this.tmrEOBI.Tick += new System.EventHandler(this.tmrEOBI_Tick);
+            // 
+            // btnTest
+            // 
+            this.btnTest.Location = new System.Drawing.Point(336, 251);
+            this.btnTest.Name = "btnTest";
+            this.btnTest.Size = new System.Drawing.Size(110, 24);
+            this.btnTest.TabIndex = 4;
+            this.btnTest.Text = "Test Probation";
+            this.btnTest.Visible = false;
+            this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
-            this.ClientSize = new System.Drawing.Size(500, 500);
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ClientSize = new System.Drawing.Size(474, 419);
+            this.Controls.Add(this.btnTest);
             this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.lblAction);
             this.Controls.Add(this.radLabel1);
             this.Controls.Add(this.wb);
+            this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmMain";
@@ -153,6 +167,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.lblAction)).EndInit();
             this.Exit.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.lblVersion)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnTest)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -163,8 +178,6 @@
         private System.Windows.Forms.Timer tmrEmployeeSync;
         private Telerik.WinControls.UI.RadWaitingBar wb;
         private Telerik.WinControls.RadThemeManager radThemeManager1;
-        private Telerik.WinControls.UI.WaitingBarIndicatorElement waitingBarIndicatorElement2;
-        private Telerik.WinControls.UI.WaitingBarIndicatorElement waitingBarIndicatorElement1;
         private Telerik.WinControls.UI.RadLabel radLabel1;
         private Telerik.WinControls.UI.RadLabel lblAction;
         private System.Windows.Forms.NotifyIcon ni;
@@ -172,6 +185,10 @@
         private System.Windows.Forms.ToolStripMenuItem cmsExit;
         private Telerik.WinControls.UI.RadLabel lblVersion;
         private System.Windows.Forms.Timer tmrFSEmployee;
+        private Telerik.WinControls.UI.RotatingRingsWaitingBarIndicatorElement rotatingRingsWaitingBarIndicatorElement1;
+        private System.Windows.Forms.Timer tmrProbation;
+        private System.Windows.Forms.Timer tmrEOBI;
+        private Telerik.WinControls.UI.RadButton btnTest;
     }
 }
 

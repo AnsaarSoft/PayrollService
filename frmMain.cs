@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using DIHRMS;
 using UFFU;
+using DIHRMS.Custom;
 
 namespace PayrollService
 {
@@ -22,6 +23,7 @@ namespace PayrollService
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         string SAPConString;
         string PayrollConString;
+        List<string> EmployeeElementList = new List<string>();
         mFm oUtility;
 
         #endregion
@@ -43,15 +45,19 @@ namespace PayrollService
                 if (!ValidateLicense(Properties.Settings.Default.LicenseKey))
                 {
                     logger.Info("license expired or invalid.");
-                    Application.Exit();
+                    //Application.Exit();
                 }
                 lblVersion.Text = $"Version {Application.ProductVersion}";
                 tmrEmployeeSync.Interval = Properties.Settings.Default.EmployeeTimer;
                 tmrEmployeeSync.Enabled = true;
                 //86400000 milisecond = 1 day
                 tmrFSEmployee.Interval = Properties.Settings.Default.EmployeeFSTimer;
-                //tmrFSEmployee.Interval = 86400000;
                 tmrFSEmployee.Enabled = true;
+                //tmrFSEmployee.Interval = 86400000;
+                tmrProbation.Interval = Properties.Settings.Default.PFTimer - 60000;
+                tmrProbation.Enabled = true;
+                tmrEOBI.Interval = Properties.Settings.Default.EOBITimer - 120000;
+                tmrEOBI.Enabled = true;
                 SAPConString = Properties.Settings.Default.SapConString;
                 PayrollConString = Properties.Settings.Default.PayrollConString;
                 logger.Info($"Sap Connection String: {SAPConString}");
@@ -69,6 +75,7 @@ namespace PayrollService
             {
                 logger.Info("employee sync start.");
                 EmployeeSync();
+                //AssignShifts();
                 logger.Info("employee sync end.");
             }
             catch (Exception ex)
@@ -91,10 +98,44 @@ namespace PayrollService
             }
         }
 
+        private void tmrProbation_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                logger.Info("employee probation check start.");
+                CheckProbationRoutine();
+                logger.Info("employee probation check end.");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        private void tmrEOBI_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                logger.Info("employee eobi check start.");
+                CheckEOBIRoutine();
+                logger.Info("employee eobi check end.");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
         private void cmsExit_Click(object sender, EventArgs e)
         {
             logger.Info($"User Close Application: {DateTime.Now}");
             Application.Exit();
+        }
+        
+        private void btnTest_Click(object sender, EventArgs e)
+        {
+            //CheckProbationRoutine();
+            CheckEOBIRoutine();
         }
         #endregion
 
@@ -103,11 +144,13 @@ namespace PayrollService
         public void EmployeeSync()
         {
             lblAction.Text = "Processing...";
+            wb.Visible = true;
             wb.StartWaiting();
             try
             {
                 using (dbHRMS context = new dbHRMS(PayrollConString))
                 {
+                    EmployeeElementList.Clear();
                     string strGetAllEmployee = $@"
                     SELECT ISNULL(a.empID, '') EmpId,
                        ISNULL(a.firstName, '') firstName,
@@ -225,11 +268,11 @@ namespace PayrollService
                                 employee.PayrollName = "Standard AV";
                                 employee.Location = 2;
                                 employee.LocationName = "Lahore";
-                                employee.FlgSandwich = true;
-                                employee.FlgEmail = true;
+                                //employee.FlgSandwich = true;
+                                //employee.FlgEmail = true;
                                 employee.BranchID = 1;
                                 employee.BranchName = "Default";
-                                employee.FlgTax = true;
+                                //employee.FlgTax = true;
                                 employee.WAStreet = Convert.ToString(row["WorkStreet"]);
                                 employee.WAStreetNo = Convert.ToString(row["WorkStreetNo"]);
                                 employee.WABlock = Convert.ToString(row["WorkBlock"]);
@@ -343,10 +386,14 @@ namespace PayrollService
                                 oUser.CreateDate = oUser.UpdateDate = DateTime.Now;
                                 employee.MstUsers.Add(oUser);
                                 context.MstEmployee.InsertOnSubmit(employee);
-
+                                EmployeeElementList.Add(empcode);
                             }
                         }
                         context.SubmitChanges();
+                        if (EmployeeElementList.Count > 0)
+                        {
+                            AssignElements();
+                        }
                     }
                     else
                     {
@@ -359,7 +406,8 @@ namespace PayrollService
                 logger.Error(ex);
             }
             wb.StopWaiting();
-            lblAction.Text = "Waiting...";
+            wb.Visible = false;
+            lblAction.Text = $"Last Queue run @ {DateTime.Now.ToString("dd/MM/yy hh:mm tt")}";
         }
 
         public void ReverseEmployeeSync()
@@ -372,24 +420,156 @@ namespace PayrollService
                                  where a.FlgActive == false
                                  select a).ToList();
                     string EmployeeIds = "";
-                    if(olist.Count > 0)
+                    if (olist.Count > 0)
                     {
-                        foreach(var one in olist)
+                        foreach (var one in olist)
                         {
                             EmployeeIds += $"{one.EmpID} ,";
                         }
                         //EmployeeIds = EmployeeIds.Remove(EmployeeIds.Length - 2 , 1);
                         string value = EmployeeIds.Substring(0, EmployeeIds.Length - 1);
-                        logger.Info($"Employee List {EmployeeIds}");    
+                        logger.Info($"Employee List {EmployeeIds}");
                         string UpdateQuery = $"Update OHEM Set U_PayrollStatus = 'N' Where empId In ({value})";
                         logger.Info($"Update FS Query: {UpdateQuery}");
-                        if( ExecuteNonQuery(UpdateQuery, SAPConString))
+                        if (ExecuteNonQuery(UpdateQuery, SAPConString))
                         {
                             logger.Info("Success update FSEmployee");
                         }
                         else
                         {
                             logger.Warn("Error Update FSEmployee.");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        public void AssignElements()
+        {
+            try
+            {
+                using (dbHRMS context = new dbHRMS(PayrollConString))
+                {
+                    //public DataServices ds;
+                    //ds = new DataServices(dbHrPayroll, Program.objHrmsUI.HRMSDbName, "");
+                    DataServices dataServices = new DataServices(context, context.Connection.Database, "");
+                    foreach (string code in EmployeeElementList)
+                    {
+                        //ds.updateStandardElements(oEmp.EmpID, true, Program.ConStrHRMS);
+                        if (string.IsNullOrEmpty(code)) continue;
+                        dataServices.updateStandardElements(code, true, PayrollConString);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        public void CheckProbationRoutine()
+        {
+            try
+            {
+                using (dbHRMS context = new dbHRMS(PayrollConString))
+                {
+                    var oEmployees = (from a in context.MstEmployee
+                                      where a.EmployeeContractType == "PROB"
+                                      && a.FlgActive == true
+                                      select a).ToList();
+                    if(oEmployees.Count > 0)
+                    {
+                        string EmployeeList = "";
+                        foreach(var employee in oEmployees)
+                        {
+                            var oSalaryCount = (from a in context.TrnsSalaryProcessRegister
+                                                where a.EmpID == employee.ID
+                                                select a).Count();
+                            if(oSalaryCount >= 3)
+                            {
+                                //employee.EmployeeContractType = "CONF";
+                                EmployeeList += $"{employee.EmpID} ,";
+                            }
+                        }
+                        string value = EmployeeList.Substring(0, EmployeeList.Length - 1);
+                        logger.Info($"Employee List {value}");
+                        string UpdateQuery = $"Update OHEM Set status = 1 Where empId In ({value})";
+                        logger.Info($"Update Probation Query: {UpdateQuery}");
+                        if (ExecuteNonQuery(UpdateQuery, SAPConString))
+                        {
+                            logger.Info("Success update Probation Employees");
+                        }
+                        else
+                        {
+                            logger.Warn("Error Update Probation Employees.");
+                        }
+                        //context.SubmitChanges();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        public void CheckEOBIRoutine()
+        {
+            try
+            {
+                using (dbHRMS context = new dbHRMS(PayrollConString))
+                {
+                    var oEmployees = (from a in context.MstEmployee 
+                                      where a.EmployeeContractType == "CONF"
+                                      && a.FlgActive == true
+                                      select a).ToList();
+                    if (oEmployees.Count > 0)
+                    {
+                        foreach (var employee in oEmployees)
+                        {
+                            var oSalaryCount = (from a in context.TrnsSalaryProcessRegister
+                                                where a.EmpID == employee.ID
+                                                select a).Count();
+                            MstElements oMstEobiElement = (from a in context.MstElements
+                                                           where a.Id == 2
+                                                           select a).FirstOrDefault();
+                            if (oSalaryCount >= 5)
+                            {
+                                var oElementHead = (from a in context.TrnsEmployeeElement
+                                                     where a.EmployeeId == employee.ID
+                                                     select a).FirstOrDefault();
+                                if (oElementHead != null)
+                                {
+                                    int ElementCount = oElementHead.TrnsEmployeeElementDetail.Where(a => a.ElementId == 2).Count();
+                                    if(ElementCount == 0)
+                                    {
+                                        clsElement oBLElement = new clsElement(context, oMstEobiElement);
+                                        TrnsEmployeeElementDetail oElement = new TrnsEmployeeElementDetail();
+                                        oElement.MstElements = oMstEobiElement;
+                                        oElement.FlgRetro = false;
+                                        oElement.RetroAmount = 0;
+                                        oElement.StartDate = oMstEobiElement.StartDate;
+                                        oElement.EndDate = oMstEobiElement.EndDate;
+                                        oElement.ElementType = oMstEobiElement.ElmtType;
+                                        oElement.ValueType = oBLElement.ValueType;
+                                        oElement.Value = oBLElement.Value;
+                                        oElement.Amount = oBLElement.Amount;
+                                        oElement.EmpContr = 0;
+                                        oElement.EmplrContr = 0;
+                                        oElement.FlgActive = true;
+                                        oElement.CreateDate = DateTime.Now;
+                                        oElement.UpdateDate = DateTime.Now;
+                                        oElement.UserId = "Auto";
+                                        oElement.UpdatedBy = "Auto";
+                                        oElementHead.TrnsEmployeeElementDetail.Add(oElement);
+                                        context.SubmitChanges();
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -431,6 +611,68 @@ namespace PayrollService
                 logger.Error(ex);
                 return false;
             }
+        }
+
+        public void AssignShifts()
+        {
+            lblAction.Text = "Processing...";
+            wb.Visible = true;
+            wb.StartWaiting();
+            Task.Delay(60000);
+            try
+            {
+                using (dbHRMS context = new dbHRMS(PayrollConString))
+                {
+                    var oEmployeeList = (from a in context.MstEmployee
+                                         where (a.FlgActive != null ? a.FlgActive : false) == true
+                                         select a).Take(10).ToList();
+                    logger.Info($"total employees for shift working. {oEmployeeList.Count}");
+                    if (oEmployeeList.Count > 0)
+                    {
+                        var oCalendar = (from a in context.MstCalendar where a.FlgActive == true select a).FirstOrDefault();
+                        foreach (var oEmp in oEmployeeList)
+                        {
+
+                            var oPayroll = (from a in context.CfgPayrollDefination where a.ID == oEmp.PayrollID select a).FirstOrDefault();
+                            if (oPayroll is null)
+                            {
+                                logger.Info($"Payroll not define for employee {oEmp.EmpID}");
+                                continue;
+                            }
+                            var oDefaultShift = (from a in context.MstShifts where a.Code == oEmp.WorkIM select a).FirstOrDefault();
+                            for (DateTime RunningDay = oCalendar.StartDate.GetValueOrDefault(); RunningDay <= oCalendar.EndDate; RunningDay = DateTime.Now.AddDays(1))
+                            {
+                                if (oEmp.JoiningDate.GetValueOrDefault() > RunningDay)
+                                {
+                                    continue;
+                                }
+                                if(oEmp.TerminationDate.GetValueOrDefault() < RunningDay)
+                                {
+                                    continue;
+                                }
+                                var CheckShiftRecord = (from a in context.TrnsAttendanceRegister
+                                                        where a.Date == RunningDay.Date
+                                                        select a).Count();
+                                if (CheckShiftRecord == 0)
+                                {
+                                    TrnsAttendanceRegister oRecord = new TrnsAttendanceRegister();
+                                    oRecord.Date = RunningDay.Date;
+                                    oRecord.ShiftID = oDefaultShift.Id;
+                                    context.TrnsAttendanceRegister.InsertOnSubmit(oRecord);
+                                }
+                            }
+                            context.SubmitChanges();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+            wb.StopWaiting();
+            wb.Visible = false;
+            lblAction.Text = $"Last Queue run @ {DateTime.Now.ToString("dd/MM/yy hh:mm tt")}";
         }
 
         private bool ExecuteNonQuery(string Query, string ConString)
@@ -494,10 +736,7 @@ namespace PayrollService
             }
         }
 
-
-
         #endregion
 
-        
     }
 }

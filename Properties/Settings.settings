@@ -17,5 +17,11 @@
     <Setting Name="EmployeeFSTimer" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">86400000</Value>
     </Setting>
+    <Setting Name="EOBITimer" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">86400000</Value>
+    </Setting>
+    <Setting Name="PFTimer" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">86400000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
