@@ -160,6 +160,7 @@ namespace PayrollService
                        ISNULL(a.jobTitle, '') Designation,
                        ISNULL(a.U_EvalStartDate, '2012-12-12') DOJ,
                        ISNULL(a.birthDate, '2012-12-12') birthDate,
+                       ISNULL(a.termDate,'2012-12-12') termdate,
                        a.Active,
                        ISNULL(a.mobile, '') mobile,
                        ISNULL(a.homeTel, '') homeTel,
@@ -244,6 +245,12 @@ namespace PayrollService
                                 if (birth != new DateTime(2012, 12, 12))
                                 {
                                     employee.DOB = birth;
+                                }
+                                DateTime termdate = Convert.ToDateTime(row["termdate"]);
+                                if (termdate != new DateTime(2012, 12, 12))
+                                {
+                                    employee.ResignDate = termdate;
+                                    employee.TerminationDate = termdate;
                                 }
                                 string sex = Convert.ToString(row["sex"]);
                                 if (!string.IsNullOrEmpty(sex))
@@ -332,6 +339,12 @@ namespace PayrollService
                                 if (birth != new DateTime(2012, 12, 12))
                                 {
                                     employee.DOB = birth;
+                                }
+                                DateTime termdate = Convert.ToDateTime(row["termdate"]);
+                                if (termdate != new DateTime(2012, 12, 12))
+                                {
+                                    employee.ResignDate = termdate;
+                                    employee.TerminationDate = termdate;
                                 }
                                 string sex = Convert.ToString(row["sex"]);
                                 if (!string.IsNullOrEmpty(sex))
