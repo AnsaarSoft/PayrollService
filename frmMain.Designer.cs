@@ -44,6 +44,7 @@
             this.tmrProbation = new System.Windows.Forms.Timer(this.components);
             this.tmrEOBI = new System.Windows.Forms.Timer(this.components);
             this.btnTest = new Telerik.WinControls.UI.RadButton();
+            this.tmrShift = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.wb)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.radLabel1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lblAction)).BeginInit();
@@ -103,12 +104,12 @@
             this.Exit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.cmsExit});
             this.Exit.Name = "Exit";
-            this.Exit.Size = new System.Drawing.Size(94, 26);
+            this.Exit.Size = new System.Drawing.Size(93, 26);
             // 
             // cmsExit
             // 
             this.cmsExit.Name = "cmsExit";
-            this.cmsExit.Size = new System.Drawing.Size(93, 22);
+            this.cmsExit.Size = new System.Drawing.Size(92, 22);
             this.cmsExit.Text = "Exit";
             this.cmsExit.Click += new System.EventHandler(this.cmsExit_Click);
             // 
@@ -141,6 +142,10 @@
             this.btnTest.Text = "Test Probation";
             this.btnTest.Visible = false;
             this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
+            // 
+            // tmrShift
+            // 
+            this.tmrShift.Tick += new System.EventHandler(this.tmrShift_Tick);
             // 
             // frmMain
             // 
@@ -189,6 +194,7 @@
         private System.Windows.Forms.Timer tmrProbation;
         private System.Windows.Forms.Timer tmrEOBI;
         private Telerik.WinControls.UI.RadButton btnTest;
+        private System.Windows.Forms.Timer tmrShift;
     }
 }
 

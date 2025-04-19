@@ -40,24 +40,27 @@ namespace PayrollService
         {
             try
             {
+                string check = Application.ProductVersion;
                 oUtility = new mFm(Application.StartupPath, false, false);
                 logger.Info($"System Hardware Key: {mFm.mfmGetSystemID()}");
                 if (!ValidateLicense(Properties.Settings.Default.LicenseKey))
                 {
                     logger.Info("license expired or invalid.");
-                    //Application.Exit();
+                    Application.Exit();
                 }
                 lblVersion.Text = $"Version {Application.ProductVersion}";
                 tmrEmployeeSync.Interval = Properties.Settings.Default.EmployeeTimer;
-                tmrEmployeeSync.Enabled = true;
+                tmrEmployeeSync.Enabled = Properties.Settings.Default.flgEmployee;
                 //86400000 milisecond = 1 day
                 tmrFSEmployee.Interval = Properties.Settings.Default.EmployeeFSTimer;
-                tmrFSEmployee.Enabled = true;
+                tmrFSEmployee.Enabled = Properties.Settings.Default.flgFSEmployee;
                 //tmrFSEmployee.Interval = 86400000;
                 tmrProbation.Interval = Properties.Settings.Default.PFTimer - 60000;
-                tmrProbation.Enabled = true;
+                tmrProbation.Enabled = Properties.Settings.Default.flgProbation;
                 tmrEOBI.Interval = Properties.Settings.Default.EOBITimer - 120000;
-                tmrEOBI.Enabled = true;
+                tmrEOBI.Enabled = Properties.Settings.Default.flgEOBI;
+                tmrShift.Interval = Properties.Settings.Default.ShiftTimer;
+                tmrShift.Enabled = Properties.Settings.Default.flgShift;
                 SAPConString = Properties.Settings.Default.SapConString;
                 PayrollConString = Properties.Settings.Default.PayrollConString;
                 logger.Info($"Sap Connection String: {SAPConString}");
@@ -131,7 +134,21 @@ namespace PayrollService
             logger.Info($"User Close Application: {DateTime.Now}");
             Application.Exit();
         }
-        
+
+        private void tmrShift_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                logger.Info("employee shift check start.");
+                AssignShifts();
+                logger.Info("employee shift check end.");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
         private void btnTest_Click(object sender, EventArgs e)
         {
             //CheckProbationRoutine();
@@ -638,7 +655,7 @@ namespace PayrollService
                 {
                     var oEmployeeList = (from a in context.MstEmployee
                                          where (a.FlgActive != null ? a.FlgActive : false) == true
-                                         select a).Take(10).ToList();
+                                         select a).ToList();
                     logger.Info($"total employees for shift working. {oEmployeeList.Count}");
                     if (oEmployeeList.Count > 0)
                     {
@@ -671,6 +688,7 @@ namespace PayrollService
                                     TrnsAttendanceRegister oRecord = new TrnsAttendanceRegister();
                                     oRecord.Date = RunningDay.Date;
                                     oRecord.ShiftID = oDefaultShift.Id;
+                                    oRecord.Remarks = "Autoshift " + Application.ProductVersion;
                                     context.TrnsAttendanceRegister.InsertOnSubmit(oRecord);
                                 }
                             }
@@ -749,6 +767,7 @@ namespace PayrollService
             }
         }
 
+        
         #endregion
 
     }

@@ -23,5 +23,23 @@
     <Setting Name="PFTimer" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">86400000</Value>
     </Setting>
+    <Setting Name="ShiftTimer" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">43200000</Value>
+    </Setting>
+    <Setting Name="flgEmployee" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="flgShift" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="flgFSEmployee" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="flgEOBI" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="flgProbation" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
